@@ -4,7 +4,7 @@ import shutil
 
 class Files:
     @classmethod
-    def dir_flatten(
+    def flatten(
             cls,
             path_base: str,
             path_current: str = '',
@@ -21,32 +21,32 @@ class Files:
         """
 
         try:
-            # iter each file/directory in current directory
+            # Iter each file/directory in current directory
             for path_target in os.listdir(f'{path_base}/{path_current}'):
-                # target file/directory to process
+                # Target file/directory to process
                 path_target_abs = f'{path_base}/{path_current}/{path_target}'
 
-                # if target is directory, then call that func recursive
+                # If target is directory, then call that func recursive
                 if os.path.isdir(path_target_abs):
-                    cls.dir_flatten(
+                    cls.flatten(
                         path_base,
                         f'{path_current}/{path_target}',
                         replace_files,
                         copy_prefix,
                     )
                 else:
-                    # if file already is in base directory
+                    # If file already is in base directory
                     if path_target_abs == f'{path_base}/{path_target}':
                         continue
 
-                    # if replace files is False we add prefix to filename
+                    # If replace files is False we add prefix to filename
                     while not replace_files and os.path.exists(f'{path_base}/{path_target}'):
                         path_target = f'{copy_prefix}{path_target}'
 
-                    # move file to base directory
+                    # Move file to base directory
                     shutil.move(path_target_abs, f'{path_base}/{path_target}')
 
-            # remove directory
+            # Remove directory
             if path_current:
                 os.rmdir(f'{path_base}/{path_current}')
 
