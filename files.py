@@ -1,13 +1,8 @@
 import os
 import shutil
-import platform
-import asyncio
 from typing import List
 from pathlib import Path
-
-import aiofile
-import aiohttp
-from aiohttp.web_exceptions import HTTPError
+from multiprocessing import Pool
 
 
 class Web:
@@ -121,7 +116,6 @@ class Files:
             path: str,
             replace_files: bool,
             copy_prefix: str,
-            semaphore: asyncio.locks.BoundedSemaphore,
     ):
         """
         Async download file
@@ -129,30 +123,10 @@ class Files:
         :param path: path to save file
         :param replace_files: enable non unique files replace
         :param copy_prefix: file name prefix for non unique files
-        :param semaphore: semaphore \(0_0)/
         :return:
         """
 
-        # Async download file
-        async with semaphore, aiohttp.ClientSession() as session:
-            # Make request
-            async with session.get(url) as response:
-                # Check status
-                if response.status != 200:
-                    raise HTTPError()
-
-                # Download file
-                data = await response.read()
-
-            # Base file name
-            file_name = cls.web.url_to_file_name(url)
-            # Copy file name
-            file_name = file_name if replace_files else cls.__file_copy_name(copy_prefix, file_name, path)
-            # Absolute path to file
-            file_path = os.path.join(path, file_name)
-            # Save file
-            async with aiofile.async_open(file_path, 'wb+') as f_aio:
-                await f_aio.write(data)
+        pass
 
     @classmethod
     def download_map(
@@ -170,20 +144,13 @@ class Files:
         :param copy_prefix: copied files prefix
         :return:
         """
-
-        try:
-            semaphore = asyncio.BoundedSemaphore(10)
-            loop = asyncio.get_event_loop()
-            tasks = [loop.create_task(cls.__download(url, path, replace_files, copy_prefix, semaphore)) for url in urls]
-            loop.run_until_complete(asyncio.wait(tasks))
-            loop.close()
-        except RuntimeError as e:
-            # Windows specific error patch
-            if platform.system() != 'Windows' or str(e) != 'Event loop is closed':
-                raise
+        pass
 
 
 if __name__ == '__main__':
+    Files.flatten('F:\\data\\Datasets\\google')
+    exit()
+
     urls_list = [
         'http://img.gazeta.ru/files3/501/12982501/upload-05-pic905v-895x505-22420.jpg',
         'https://icdn.lenta.ru/images/2020/11/15/14/20201115143852578/pwa_vertical_1280_6027c3a00df85e12c17887301d8dec32.jpg',
